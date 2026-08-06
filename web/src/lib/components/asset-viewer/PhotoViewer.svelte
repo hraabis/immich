@@ -244,23 +244,35 @@
     onImageReady={(quality: ImageQuality) => {
       visibleImageReady = true;
 
-      console.log('onImageReady: ' + quality);
+      //console.log('onImageReady: ' + quality);
       if (quality === 'thumbnail' && $slideshowState === SlideshowState.PlaySlideshow && $slideshowAnimate) {
-        let randomDirection = getRandomInt(0, 2);
+        let randomZoomDirection = getRandomInt(0, 3);
+        if (randomZoomDirection == 0) {
+          console.log('No Animation');
+          return;
+        }
         let randomScale = (getRandomInt(50, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
         let duration = $slideshowDelay * 1000 - 600;
         console.group('asset: ' + asset.id);
-        console.log('Direction: ' + randomDirection);
+        console.log('Direction: ' + randomZoomDirection);
         console.log('Scale: ' + randomScale);
-        console.groupEnd();
-        if (randomDirection == 1) {
+        if (randomZoomDirection == 1) {
           assetViewerManager.animatedZoom(randomScale, duration);
-        } else if (randomDirection == 2) {
+        } else if (randomZoomDirection == 2) {
           assetViewerManager.animatedZoom(randomScale, 20);
           setTimeout(() => {
             assetViewerManager.animatedZoom(1, duration - 40);
           }, 40);
+        } else if (randomZoomDirection == 3) {
+          let randomXPan = getRandomInt(-5000, 0);
+          let randomYPan = getRandomInt(-3000, 0);
+          assetViewerManager.animatedZoomAndPan(randomScale, randomXPan, randomYPan, 20);
+          console.log('Pan X,Y: ' + randomXPan + ',' + randomYPan);
+          setTimeout(() => {
+            assetViewerManager.animatedZoomAndPan(1, 0, 0, duration - 40);
+          }, 40);
         }
+        console.groupEnd();
       }
       onReady?.();
     }}

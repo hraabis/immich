@@ -162,6 +162,35 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.#animationFrameId = requestAnimationFrame(frame);
   }
 
+  animatedZoomAndPan(targetZoom: number, targetXPosition: number, targetYPosition: number, duration = 300) {
+    this.cancelZoomAnimation();
+
+    const startZoom = this.#zoomState.currentZoom;
+    const startXPosition = this.#zoomState.currentPositionX;
+    const startYPosition = this.#zoomState.currentPositionY;
+    const startTime = performance.now();
+
+    const frame = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const linearProgress = Math.min(elapsed / duration, 1);
+      const easedProgress = cubicOut(linearProgress);
+      const interpolatedZoom = startZoom + (targetZoom - startZoom) * easedProgress;
+      const interpolatedXPan = Math.round(startXPosition + (targetXPosition - startXPosition) * easedProgress);
+      const interpolatedYPan = Math.round(startYPosition + (targetYPosition - startYPosition) * easedProgress);
+
+      this.zoomState = {
+        ...this.#zoomState,
+        currentZoom: interpolatedZoom,
+        currentPositionX: interpolatedXPan,
+        currentPositionY: interpolatedYPan,
+      };
+
+      this.#animationFrameId = linearProgress < 1 ? requestAnimationFrame(frame) : null;
+    };
+
+    this.#animationFrameId = requestAnimationFrame(frame);
+  }
+
   resetZoomState() {
     this.cancelZoomAnimation();
     this.zoomState = createDefaultZoomState();
